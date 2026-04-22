@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
@@ -29,7 +29,7 @@ const MOTIVO_MSG: Record<string, string> = {
   expirado:       'Este convite expirou. Peça ao administrador que envie um novo.',
 }
 
-export default function ConvitePage() {
+function ConviteContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? ''
@@ -82,13 +82,7 @@ export default function ConvitePage() {
     router.push(destino)
   }
 
-  if (!info) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center bg-(--bg-body)">
-        <div className="w-8 h-8 border-4 border-(--p-orange) border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
+  if (!info) return <ConviteSpinner />
 
   if (!info.valido) {
     const msg = erroParam
@@ -156,5 +150,21 @@ export default function ConvitePage() {
         )}
       </div>
     </div>
+  )
+}
+
+function ConviteSpinner() {
+  return (
+    <div className="min-h-dvh flex items-center justify-center bg-(--bg-body)">
+      <div className="w-8 h-8 border-4 border-(--p-orange) border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
+
+export default function ConvitePage() {
+  return (
+    <Suspense fallback={<ConviteSpinner />}>
+      <ConviteContent />
+    </Suspense>
   )
 }
